@@ -19,7 +19,7 @@ We take the security of VLCord seriously. If you believe you have found a securi
 
 Instead, please report them via:
 
-1. **Email**: Send details to `security@vlcord.site`
+1. **Email**: Send details to `admin@cannaman.xyz`
 2. **Private GitHub issue**: Use the private vulnerability reporting feature
 3. **GitHub Security Advisories**: Create a security advisory
 

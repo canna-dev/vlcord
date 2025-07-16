@@ -15,7 +15,7 @@ Thank you for your interest in contributing to VLCord! This document provides gu
 
 1. **Fork and clone the repository**
    ```bash
-   git clone https://github.com/yourusername/vlcord.git
+   git clone https://github.com/canna-dev/vlcord.git
    cd vlcord
    ```
 
@@ -67,7 +67,7 @@ src/
 
 ### Reporting Bugs
 
-1. Check existing [issues](https://github.com/yourusername/vlcord/issues)
+1. Check existing [issues](https://github.com/canna-dev/vlcord/issues)
 2. Create a new issue with:
    - Clear description of the problem
    - Steps to reproduce
