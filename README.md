@@ -19,7 +19,8 @@
 ![Discord Rich Presence Example](assets/discord-preview.png)
 
 ### Web Interface
-![Web Interface](assets/web-interface.png)
+![Web Interface - Overview](assets/web-interface-1.png)
+![Web Interface - Settings](assets/web-interface-2.png)
 
 ## 🚀 Quick Start
 
