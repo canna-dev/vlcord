@@ -9,7 +9,7 @@ services:
     environment:
       - NODE_ENV=production
       - WEB_PORT=7100
-      - VLC_HOST=${VLC_HOST:-localhost}
+      - VLC_HOST=${VLC_HOST:-host.docker.internal}
       - VLC_PORT=${VLC_PORT:-8080}
       - VLC_PASSWORD=${VLC_PASSWORD:-}
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
