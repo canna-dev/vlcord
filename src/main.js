@@ -17,9 +17,9 @@ import { validateDiscordClientId, validateTmdbApiKey } from './input-validator.j
 import { circuitBreakerManager } from './circuit-breaker.js';
 import { activityHistory } from './activity-history.js';
 import { metadataDb } from './metadata-overrides-db.js';
-import { HealthCheckManager } from './health-check-enhanced.js';
-import { RedisCacheManager } from './redis-cache.js';
-import { ConfigHotReloadManager } from './config-hot-reload.js';
+import { HealthCheckManager } from './health-check-enhanced.ts';
+import { RedisCacheManager } from './redis-cache.ts';
+import { ConfigHotReloadManager } from './config-hot-reload.ts';
 
 // Load environment variables
 dotenv.config();
