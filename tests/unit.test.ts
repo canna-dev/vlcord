@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import type { VLCStatus, DiscordPresenceData, CircuitBreakerStatus } from '../src/types.js';
+import type { VLCStatus, DiscordPresenceData } from '../src/types.js';
 
 // ============================================================================
 // Environment Validator Tests
@@ -66,7 +66,6 @@ describe('Circuit Breaker', () => {
 
   it('should transition from OPEN to HALF_OPEN after timeout', () => {
     let state: string = 'OPEN';
-    const resetTimeout = 1000;
     const timeoutPassed = true;
 
     if (state === 'OPEN' && timeoutPassed) {
@@ -325,7 +324,6 @@ describe('Health Check Endpoint', () => {
 describe('Graceful Degradation', () => {
   it('should buffer activities when service unavailable', () => {
     const buffer: DiscordPresenceData[] = [];
-    const maxBufferSize = 50;
 
     const activity: DiscordPresenceData = {
       state: 'Buffered',
