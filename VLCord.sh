@@ -14,7 +14,7 @@ echo ""
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd "$DIR"
 
-node src/main.ts
+npm start
 
 echo ""
 echo "VLCord has stopped."

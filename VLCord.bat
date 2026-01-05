@@ -12,7 +12,7 @@ echo 🛑 Press Ctrl+C to stop VLCord
 echo.
 
 cd /d "%~dp0"
-node src\main.ts
+npm start
 
 echo.
 echo VLCord has stopped.
