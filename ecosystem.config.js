@@ -12,7 +12,7 @@ module.exports = {
   apps: [
     {
       name: 'vlcord',
-      script: './src/main.js',
+      script: './src/main.ts',
       instances: 1,
       exec_mode: 'fork',
       
