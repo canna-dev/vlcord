@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLCord - VLC Discord Rich Presence</title>
+    <link rel="icon" href="assets/icon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="VLCord Logo" class="logo">
+                <h1>VLCord</h1>
+            </div>
+            <p class="tagline">VLC Discord Rich Presence</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Navigation Tabs -->
+            <nav class="tabs-nav">
+                <button class="tab-btn active" data-tab="overview">Overview</button>
+                <button class="tab-btn" data-tab="settings">Settings</button>
+            </nav>
+
+            <!-- Overview Tab Content -->
+            <div class="tab-content active" id="overview-tab">
+                <div class="status-section">
+                    <div class="status-item" id="vlc-status">
+                        <img src="assets/vlc.png" alt="VLC" class="status-icon">
+                        <div class="status-info">
+                            <h3>VLC</h3>
+                            <p id="vlc-status-text">Disconnected</p>
+                        </div>
+                    </div>
+                    <div class="status-item" id="discord-status">
+                        <img src="assets/discord.png" alt="Discord" class="status-icon">
+                        <div class="status-info">
+                            <h3>Discord</h3>
+                            <p id="discord-status-text">Disconnected</p>
+                        </div>
+                    </div>
+                </div>
+
+                <section class="content-section">
+                    <h2>Media Preview</h2>
+                    <div class="media-preview">
+                        <img id="media-poster" src="assets/vlc.png" alt="Media poster" class="media-poster">
+                        <div class="media-info">
+                            <div class="media-title" id="media-title">Not playing</div>
+                            <div class="media-type" id="media-metadata">-</div>
+                            <div class="media-progress">
+                                <div class="progress-bar">
+                                    <div id="progress-fill" class="progress-fill"></div>
+                                </div>
+                                <div class="progress-text">
+                                    <span id="progress-time">0:00 / 0:00</span>
+                                    <span id="progress-percentage">0%</span>
+                                </div>
+                            </div>
+                            <a href="#" id="tmdb-link" class="tmdb-link" target="_blank" rel="noopener">View on TMDb</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Settings Tab Content -->
+            <div class="tab-content" id="settings-tab">
+                <section class="settings-section">
+                    <h2>Settings</h2>
+                    <div id="settings-form">
+                        <div class="settings-group">
+                            <h3>VLC Connection</h3>
+                            <div class="form-row">
+                                <label for="vlc-host">Host:</label>
+                                <input type="text" id="vlc-host" value="localhost">
+                            </div>
+                            <div class="form-row">
+                                <label for="vlc-port">Port:</label>
+                                <input type="number" id="vlc-port" value="8080">
+                            </div>
+                            <div class="form-row">
+                                <label for="vlc-password">Password:</label>
+                                <input type="password" id="vlc-password" value="vlcpassword">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Discord Integration</h3>
+                            <div class="form-row">
+                                <label for="discord-client-id">Client ID:</label>
+                                <input type="text" id="discord-client-id" value="1392902149163319398">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>TMDb Integration</h3>
+                            <div class="form-row">
+                                <label for="tmdb-api-key">API Key:</label>
+                                <div class="input-group">
+                                    <input type="password" id="tmdb-api-key" value="ccc1fa36a0821299ae4d7a6c155b442d">
+                                    <button type="button" id="show-api-key" class="show-btn">Show</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-buttons">
+                            <button type="button" id="save-settings" class="save-btn">Save Settings</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>VLCord - VLC Discord Rich Presence</p>
+            <p class="footer-links">
+                <a href="https://github.com/canna-dev/vlcord" target="_blank" rel="noopener">GitHub</a> | 
+                <a href="#" id="setup-instructions">Setup Instructions</a>
+            </p>
+        </footer>
+        
+        <!-- Setup Instructions Modal -->
+        <div id="instructions-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2>VLCord Setup Instructions</h2>
+                
+                <section class="modal-section">
+                    <h3>VLC Setup</h3>
+                    <p>Enable VLC's HTTP interface by adding these parameters when launching VLC:</p>
+                    <pre><code>--intf http --http-host localhost --http-port 8080 --http-password vlcpassword</code></pre>
+                    <p>In VLC, you can also go to:</p>
+                    <ol>
+                        <li>Tools → Preferences</li>
+                        <li>Show all settings (bottom left)</li>
+                        <li>Interface → Main interfaces → Check "Web"</li>
+                        <li>Interface → Main interfaces → Lua → Lua HTTP → Set your password</li>
+                    </ol>
+                </section>
+                
+                <section class="modal-section">
+                    <h3>Discord Application Setup</h3>
+                    <ol>
+                        <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal</a></li>
+                        <li>Create a new application</li>
+                        <li>Copy the Application ID to the Client ID field in VLCord settings</li>
+                        <li>Under Rich Presence → Art Assets, upload these images:
+                            <ul>
+                                <li><strong>vlc</strong> - VLC logo</li>
+                                <li><strong>vlcord</strong> - VLCord logo</li>
+                                <li><strong>play</strong> - Play icon</li>
+                                <li><strong>pause</strong> - Pause icon</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </section>
+                
+                <section class="modal-section">
+                    <h3>TMDb Setup</h3>
+                    <ol>
+                        <li>Sign up at <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TheMovieDB</a></li>
+                        <li>Go to Settings → API → Create new API key</li>
+                        <li>Copy the API Key (v3 auth) to the TMDb API Key field in VLCord settings</li>
+                    </ol>
+                </section>
+                
+                <button class="modal-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VLC Setup Wizard Modal -->
+    <div id="vlc-setup-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>VLC Setup Wizard</h2>
+                <span class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="vlc-setup-content">
+                    <div class="setup-step">
+                        <h3>Testing VLC Connection...</h3>
+                        <div class="loading-spinner"></div>
+                        <p id="vlc-test-result">Checking if VLC is properly configured...</p>
+                    </div>
+                </div>
+                
+                <div class="setup-actions">
+                    <button id="test-vlc-connection" class="btn btn-primary">Test VLC Connection</button>
+                    <button id="download-vlc-shortcut" class="btn btn-secondary hidden">Download VLC Shortcut</button>
+                    <button class="modal-close-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

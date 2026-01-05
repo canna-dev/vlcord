@@ -1,0 +1,8 @@
+
+{
+	"name": "vlcord-scripts",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Helper scripts for vlcord",
+	"license": "MIT"
+}

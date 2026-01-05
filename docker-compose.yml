@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  vlcord:
+    build: .
+    container_name: vlcord
+    ports:
+      - "7100:7100"
+    environment:
+      - NODE_ENV=production
+      - WEB_PORT=7100
+      - VLC_HOST=${VLC_HOST:-localhost}
+      - VLC_PORT=${VLC_PORT:-8080}
+      - VLC_PASSWORD=${VLC_PASSWORD:-}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - VLCORD_ADMIN_TOKEN=${VLCORD_ADMIN_TOKEN}
+      - TMDB_API_KEY=${TMDB_API_KEY}
+      - VLC_POLL_INTERVAL=1000
+      - REDIS_ENABLED=${REDIS_ENABLED:-true}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - vlcord-network
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./vlcord-config.json:/app/vlcord-config.json
+
+  redis:
+    image: redis:latest
+    container_name: vlcord-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - vlcord-network
+    volumes:
+      - redis-data:/data
+
+networks:
+  vlcord-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local

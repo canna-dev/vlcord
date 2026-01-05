@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLCord Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-degraded {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-unhealthy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .service-name {
+            font-weight: 500;
+        }
+
+        .service-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .service-online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .service-offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .service-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px;
+            border-left: 4px solid #667eea;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .activity-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .activity-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .activity-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .activity-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .button-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #5568d3;
+        }
+
+        .button-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .button-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .button-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .button-danger:hover {
+            background: #c82333;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 200px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .metadata-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .metadata-table th,
+        .metadata-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metadata-table th {
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .metadata-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .refresh-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .circuit-breaker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .circuit-breaker {
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border: 2px solid #eee;
+        }
+
+        .circuit-closed {
+            background: #d4edda;
+            border-color: #155724;
+        }
+
+        .circuit-open {
+            background: #f8d7da;
+            border-color: #721c24;
+        }
+
+        .circuit-half-open {
+            background: #fff3cd;
+            border-color: #856404;
+        }
+
+        .circuit-name {
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .circuit-state {
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .circuit-count {
+            font-size: 10px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 VLCord Dashboard</h1>
+            <div>
+                <span id="status-badge" class="status-badge status-healthy">
+                    <span class="refresh-indicator"></span>Healthy
+                </span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- System Health Card -->
+            <div class="card">
+                <h2>System Health</h2>
+                <div class="metric">
+                    <span class="metric-label">Uptime</span>
+                    <span class="metric-value" id="uptime">Calculating...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="metric-value" id="health-status">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Connections Card -->
+            <div class="card">
+                <h2>Connections</h2>
+                <div id="connections">
+                    <div class="service-item">
+                        <span class="service-name">Discord</span>
+                        <span class="service-status service-offline">Offline</span>
+                    </div>
+                    <div class="service-item">
+                        <span class="service-name">VLC</span>
+                        <span class="service-status service-offline">Offline</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Statistics Card -->
+            <div class="card">
+                <h2>Activity Statistics</h2>
+                <div class="metric">
+                    <span class="metric-label">Total Updates</span>
+                    <span class="metric-value" id="total-updates">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Success Rate</span>
+                    <span class="metric-value" id="success-rate">0%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Avg Update Time</span>
+                    <span class="metric-value" id="avg-time">0ms</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Circuit Breakers Card -->
+            <div class="card" style="grid-column: span 2;">
+                <h2>Circuit Breakers</h2>
+                <div class="circuit-breaker-grid" id="circuit-breakers">
+                    <div class="circuit-breaker circuit-closed">
+                        <div class="circuit-name">Discord</div>
+                        <div class="circuit-state">CLOSED</div>
+                        <div class="circuit-count">0 failures</div>
+                    </div>
+                    <div class="circuit-breaker circuit-closed">
+                        <div class="circuit-name">VLC</div>
+                        <div class="circuit-state">CLOSED</div>
+                        <div class="circuit-count">0 failures</div>
+                    </div>
+                    <div class="circuit-breaker circuit-closed">
+                        <div class="circuit-name">TMDb</div>
+                        <div class="circuit-state">CLOSED</div>
+                        <div class="circuit-count">0 failures</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Card -->
+            <div class="card" style="grid-column: 1;">
+                <h2>Recent Activity</h2>
+                <div class="activity-list" id="recent-activity">
+                    <div style="color: #999; text-align: center; padding: 20px;">
+                        No activities yet
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Card -->
+        <div class="card">
+            <h2>Controls</h2>
+            <div class="controls">
+                <button class="button button-primary" onclick="pauseMonitoring()">Pause Monitoring</button>
+                <button class="button button-primary" onclick="resumeMonitoring()">Resume Monitoring</button>
+                <button class="button button-secondary" onclick="refreshData()">Refresh Now</button>
+                    <button class="button button-secondary" onclick="exportActivityReport()">Export Report</button>
+                    <button class="button button-secondary" onclick="toggleLogsPanel()">View Logs</button>
+                </div>
+            </div>
+
+            <!-- Advanced Search & Filter Card -->
+            <div class="card">
+                <h2>Advanced Search</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="search-title" placeholder="Search title..." style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <select id="filter-status" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">All Statuses</option>
+                        <option value="success">Success</option>
+                        <option value="failed">Failed</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                    <input type="date" id="filter-date" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button class="button button-primary" onclick="applyFilters()" style="width: 100%;">Apply Filters</button>
+        <!-- Metadata Overrides Card -->
+        <div class="card">
+            <h2>Metadata Overrides</h2>
+            <table class="metadata-table" id="overrides-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="overrides-body">
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: #999;">
+                            Loading overrides...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = window.location.origin;
+        const REFRESH_INTERVAL = 5000; // 5 seconds
+
+        // Global state
+        let isMonitoringPaused = false;
+
+        // Initialize dashboard
+        async function initDashboard() {
+            await refreshData();
+            setInterval(refreshData, REFRESH_INTERVAL);
+        }
+
+        // Refresh all data
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    updateHealth(),
+                    updateConnections(),
+                    updateActivityStats(),
+                    updateCircuitBreakers(),
+                    updateRecentActivity(),
+                    updateOverrides()
+                ]);
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                updateStatusBadge('unhealthy');
+            }
+        }
+
+        // Update health status
+        async function updateHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+
+                document.getElementById('health-status').textContent = data.status.toUpperCase();
+                document.getElementById('uptime').textContent = formatUptime(data.uptime);
+                updateStatusBadge(data.status);
+            } catch (error) {
+                console.error('Error updating health:', error);
+            }
+        }
+
+        // Update connections
+        async function updateConnections() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+
+                const connections = data.connections;
+                const html = `
+                    <div class="service-item">
+                        <span class="service-name">Discord</span>
+                        <span class="service-status ${connections.discord ? 'service-online' : 'service-offline'}">
+                            ${connections.discord ? 'Online' : 'Offline'}
+                        </span>
+                    </div>
+                    <div class="service-item">
+                        <span class="service-name">VLC</span>
+                        <span class="service-status ${connections.vlc ? 'service-online' : 'service-offline'}">
+                            ${connections.vlc ? 'Online' : 'Offline'}
+                        </span>
+                    </div>
+                `;
+                document.getElementById('connections').innerHTML = html;
+            } catch (error) {
+                console.error('Error updating connections:', error);
+            }
+        }
+
+        // Update activity statistics
+        async function updateActivityStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/discord/activity-history?count=100`);
+                const data = await response.json();
+                const stats = data.stats;
+
+                document.getElementById('total-updates').textContent = stats.totalUpdates;
+                const rate = stats.totalUpdates > 0
+                    ? Math.round((stats.successfulUpdates / stats.totalUpdates) * 100)
+                    : 0;
+                document.getElementById('success-rate').textContent = rate + '%';
+                document.getElementById('avg-time').textContent = Math.round(stats.averageUpdateTime) + 'ms';
+            } catch (error) {
+                console.error('Error updating activity stats:', error);
+            }
+        }
+
+        // Update circuit breakers
+        async function updateCircuitBreakers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/system/circuit-breakers`);
+                const data = await response.json();
+
+                let html = '';
+                for (const [service, breaker] of Object.entries(data)) {
+                    const stateClass = `circuit-${breaker.state.toLowerCase().replace(/_/g, '-')}`;
+                    const isOpen = breaker.state === 'OPEN';
+                    html += `
+                        <div class="circuit-breaker ${stateClass}">
+                            <div class="circuit-name">${service}</div>
+                            <div class="circuit-state">${breaker.state}</div>
+                            <div class="circuit-count">${breaker.failureCount} failures</div>
+                            ${isOpen ? `<button class="button button-danger" onclick="resetCircuitBreaker('${service}')" style="width: 100%; margin-top: 6px; padding: 4px; font-size: 11px;">Reset</button>` : ''}
+                        </div>
+                    `;
+                }
+                document.getElementById('circuit-breakers').innerHTML = html;
+            } catch (error) {
+                console.error('Error updating circuit breakers:', error);
+            }
+        }
+
+        // Update recent activity
+        async function updateRecentActivity() {
+            try {
+                const response = await fetch(`${API_BASE}/api/discord/activity-history?count=10`);
+                const data = await response.json();
+
+                let html = '';
+                if (data.history.length === 0) {
+                    html = '<div style="color: #999; text-align: center; padding: 20px;">No activities yet</div>';
+                } else {
+                    data.history.forEach(activity => {
+                        const statusClass = `activity-${activity.status}`;
+                        const time = new Date(activity.timestamp).toLocaleTimeString();
+                        html += `
+                            <div class="activity-item">
+                                <div class="activity-title">${activity.activity.details || activity.activity.state || 'Unknown'}</div>
+                                <div class="activity-time">${time}</div>
+                                <span class="activity-status ${statusClass}">${activity.status.toUpperCase()}</span>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('recent-activity').innerHTML = html;
+            } catch (error) {
+                console.error('Error updating recent activity:', error);
+            }
+        }
+
+        // Update metadata overrides
+        async function updateOverrides() {
+            try {
+                const response = await fetch(`${API_BASE}/api/metadata/overrides`);
+                const data = await response.json();
+
+                let html = '';
+                if (data.length === 0) {
+                    html = '<tr><td colspan="3" style="text-align: center; color: #999;">No overrides configured</td></tr>';
+                } else {
+                    data.forEach(override => {
+                        html += `
+                            <tr>
+                                <td>${override.title}</td>
+                                <td>${override.category}</td>
+                                <td>
+                                    <button class="button button-danger" onclick="deleteOverride('${override.id}')">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+                document.getElementById('overrides-body').innerHTML = html;
+            } catch (error) {
+                console.error('Error updating overrides:', error);
+            }
+        }
+
+        // Pause monitoring
+        async function pauseMonitoring() {
+            try {
+                await fetch(`${API_BASE}/api/monitor/pause`, { method: 'POST' });
+                isMonitoringPaused = true;
+                alert('Monitoring paused');
+            } catch (error) {
+                console.error('Error pausing monitoring:', error);
+            }
+        }
+
+        // Resume monitoring
+        async function resumeMonitoring() {
+            try {
+                await fetch(`${API_BASE}/api/monitor/resume`, { method: 'POST' });
+                isMonitoringPaused = false;
+                alert('Monitoring resumed');
+            } catch (error) {
+                console.error('Error resuming monitoring:', error);
+            }
+        }
+
+        // Delete override
+        async function deleteOverride(id) {
+            if (!confirm('Are you sure you want to delete this override?')) return;
+
+            try {
+                await fetch(`${API_BASE}/api/metadata/overrides?id=${id}`, { method: 'DELETE' });
+                await updateOverrides();
+            } catch (error) {
+                console.error('Error deleting override:', error);
+            }
+        }
+
+        // Update status badge
+        function updateStatusBadge(status) {
+            const badge = document.getElementById('status-badge');
+            badge.textContent = '';
+            const span = document.createElement('span');
+            span.className = 'refresh-indicator';
+            badge.appendChild(span);
+            badge.appendChild(document.createTextNode(status.toUpperCase()));
+
+            badge.className = `status-badge status-${status}`;
+        }
+
+        // Format uptime
+        function formatUptime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return `${days}d ${hours % 24}h`;
+            if (hours > 0) return `${hours}h ${minutes % 60}m`;
+            if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+            return `${seconds}s`;
+        }
+
+        // Start dashboard
+        initDashboard();
+
+        // ============================================================================
+        // Advanced Features
+        // ============================================================================
+
+        // Export activity report
+        async function exportActivityReport() {
+            try {
+                const response = await fetch(`${API_BASE}/api/discord/activity-history?count=1000`);
+                const data = await response.json();
+
+                const csv = [
+                    ['Timestamp', 'Title', 'Status', 'Error'],
+                    ...data.history.map(h => [
+                        new Date(h.timestamp).toISOString(),
+                        h.activity.details || h.activity.state,
+                        h.status,
+                        h.error || ''
+                    ])
+                ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `vlcord-report-${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+
+                alert('Report exported successfully!');
+            } catch (error) {
+                console.error('Error exporting report:', error);
+            }
+        }
+
+        // Toggle logs panel
+        function toggleLogsPanel() {
+            const logsPanel = document.getElementById('logs-panel');
+            if (!logsPanel) {
+                createLogsPanel();
+            } else {
+                logsPanel.style.display = logsPanel.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Create logs panel
+        function createLogsPanel() {
+            const panel = document.createElement('div');
+            panel.id = 'logs-panel';
+            panel.style.cssText = 'position: fixed; bottom: 20px; right: 20px; width: 400px; height: 300px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column;';
+
+            panel.innerHTML = `
+                <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;">Live Logs</h3>
+                    <button class="button button-secondary" onclick="document.getElementById('logs-panel').remove()" style="padding: 4px 8px; font-size: 12px;">Close</button>
+                </div>
+                <div id="logs-content" style="flex: 1; overflow-y: auto; padding: 10px; font-family: monospace; font-size: 12px; background: #f5f5f5;"></div>
+                <div style="padding: 10px; border-top: 1px solid #eee;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="auto-scroll" checked>
+                        Auto-scroll
+                    </label>
+                </div>
+            `;
+
+            document.body.appendChild(panel);
+
+            // Start fetching logs
+            fetchLogs();
+            setInterval(fetchLogs, 1000);
+        }
+
+        // Fetch and display logs
+        async function fetchLogs() {
+            try {
+                const response = await fetch(`${API_BASE}/api/system/logs?limit=50`);
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const logsContent = document.getElementById('logs-content');
+                if (!logsContent) return;
+
+                logsContent.innerHTML = data.logs
+                    .map(log => `<div style="padding: 4px 0; border-bottom: 1px solid #eee;">
+                        <span style="color: #666;">${new Date(log.timestamp).toLocaleTimeString()}</span>
+                        <span style="color: #f67; margin-left: 8px;">[${log.level.toUpperCase()}]</span>
+                        <span style="margin-left: 8px;">${log.message}</span>
+                    </div>`)
+                    .join('');
+
+                if (document.getElementById('auto-scroll')?.checked) {
+                    logsContent.scrollTop = logsContent.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+            }
+        }
+
+        // Apply filters
+        async function applyFilters() {
+            try {
+                const title = document.getElementById('search-title').value;
+                const status = document.getElementById('filter-status').value;
+                const date = document.getElementById('filter-date').value;
+
+                let url = `${API_BASE}/api/discord/activity-history?count=100`;
+                if (status) url += `&status=${status}`;
+                if (date) {
+                    const startTime = new Date(date).getTime();
+                    const endTime = startTime + 24 * 60 * 60 * 1000;
+                    url += `&startTime=${startTime}&endTime=${endTime}`;
+                }
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Filter by title if provided
+                let filtered = data.history;
+                if (title) {
+                    filtered = filtered.filter(h => 
+                        (h.activity.details || h.activity.state || '').toLowerCase().includes(title.toLowerCase())
+                    );
+                }
+
+                // Update display
+                let html = '';
+                if (filtered.length === 0) {
+                    html = '<div style="color: #999; text-align: center; padding: 20px;">No results</div>';
+                } else {
+                    filtered.forEach(activity => {
+                        const statusClass = `activity-${activity.status}`;
+                        const time = new Date(activity.timestamp).toLocaleTimeString();
+                        html += `
+                            <div class="activity-item">
+                                <div class="activity-title">${activity.activity.details || activity.activity.state || 'Unknown'}</div>
+                                <div class="activity-time">${time}</div>
+                                <span class="activity-status ${statusClass}">${activity.status.toUpperCase()}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                document.getElementById('recent-activity').innerHTML = html;
+            } catch (error) {
+                console.error('Error applying filters:', error);
+            }
+        }
+
+        // Circuit breaker recovery (manual reset)
+        async function resetCircuitBreaker(service) {
+            if (!confirm(`Reset circuit breaker for ${service}?`)) return;
+
+            try {
+                await fetch(`${API_BASE}/api/system/circuit-breakers/${service}/reset`, { method: 'POST' });
+                alert('Circuit breaker reset. System will retry connections.');
+                await updateCircuitBreakers();
+            } catch (error) {
+                console.error('Error resetting circuit breaker:', error);
+            }
+        }
+    </script>
+</body>
+</html>
