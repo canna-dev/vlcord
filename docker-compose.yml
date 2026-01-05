@@ -21,6 +21,7 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - DISABLE_DISCORD=true
     depends_on:
       redis:
         condition: service_healthy

@@ -1,0 +1,35 @@
+{
+  "movies": {
+    "[rec]": {
+      "tmdbId": 24282,
+      "title": "[REC]"
+    },
+    "[rec] 2": {
+      "tmdbId": 24283,
+      "title": "[REC] 2"
+    },
+    "[rec] 3": {
+      "tmdbId": 65179,
+      "title": "[REC] 3: Génesis"
+    }
+  },
+  "shows": {
+    "attack on titan": {
+      "tmdbId": 37122,
+      "title": "Attack on Titan"
+    },
+    "shingeki no kyojin": {
+      "tmdbId": 37122,
+      "title": "Attack on Titan"
+    },
+    "demon slayer": {
+      "tmdbId": 78953,
+      "title": "Demon Slayer"
+    },
+    "kimetsu no yaiba": {
+      "tmdbId": 78953,
+      "title": "Demon Slayer"
+    }
+  },
+  "custom": {}
+}

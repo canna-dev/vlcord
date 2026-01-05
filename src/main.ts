@@ -418,10 +418,20 @@ const vlcMonitor = new VLCMonitor({
   pollingInterval: process.env.VLC_POLL_INTERVAL ? parseInt(process.env.VLC_POLL_INTERVAL, 10) : 1000 // Poll every second by default
 });
 
-// Initialize Discord Presence
-const discordPresence = new DiscordPresence({
-  clientId: DISCORD_CLIENT_ID
-});
+// Initialize Discord Presence (skip if disabled)
+const discordPresence = process.env.DISABLE_DISCORD === 'true' 
+  ? { 
+      initialize: () => {}, 
+      disconnect: () => {}, 
+      clearPresence: () => {}, 
+      updatePresence: () => {}, 
+      updateConfig: () => {},
+      on: () => {},
+      getConnectionStatus: () => ({ connected: false, clientConnected: false })
+    }
+  : new DiscordPresence({
+      clientId: DISCORD_CLIENT_ID
+    });
 
 // Set up WebSocket communication
 io.on('connection', (socket) => {
