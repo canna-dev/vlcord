@@ -2,12 +2,12 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install only production deps by default
+# Install dependencies (including tsx for TypeScript support)
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev || npm install --production
+RUN npm ci || npm install
 
 COPY . .
 
 ENV NODE_ENV=production
 EXPOSE 7100
-CMD ["node", "src/main.ts"]
+CMD ["npx", "tsx", "src/main.ts"]
