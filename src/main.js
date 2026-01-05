@@ -31,8 +31,10 @@ validateEnvironment();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize metadata overrides database
-await metadataDb.init();
+// Main async function
+async function main() {
+  // Initialize metadata overrides database
+  await metadataDb.init();
 
 // Initialize health check manager
 const healthCheckManager = new HealthCheckManager();
@@ -525,4 +527,11 @@ process.on('SIGINT', () => {
     cacheManager.disconnect().catch(err => logger.warn('Error disconnecting cache:', err.message));
   }
   process.exit(0);
+});
+}
+
+// Start the app
+main().catch(err => {
+  logger.error('Fatal error:', err);
+  process.exit(1);
 });

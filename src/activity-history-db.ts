@@ -6,7 +6,7 @@ import sqlite3 from 'sqlite3';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import type { ActivityHistoryEntry, ActivityStats, DiscordPresenceData } from './types.js';
+import type { ActivityHistoryEntry, ActivityStats } from './types.js';
 import { getLogger } from './logger.js';
 
 const __filename = fileURLToPath(import.meta.url);

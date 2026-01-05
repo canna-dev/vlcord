@@ -72,7 +72,7 @@ function cleanTitle(filename) {
   }
 
   // Remove file extension
-  let cleanName = filename.replace(/\.(mkv|mp4|avi|m4v|mov|wmv|flv|webm|m2ts|ts)$/i, '');
+  const cleanName = filename.replace(/\.(mkv|mp4|avi|m4v|mov|wmv|flv|webm|m2ts|ts)$/i, '');
   const lowerFilename = cleanName.toLowerCase();
   
   // Use parse-torrent-name for initial parsing

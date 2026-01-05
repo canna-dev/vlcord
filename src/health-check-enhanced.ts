@@ -2,7 +2,6 @@
  * Enhanced Health Check & Status Monitoring
  */
 
-import type { Request, Response } from 'express';
 import type { CircuitBreakerStatus, ActivityStats } from './types.js';
 import { getLogger } from './logger.js';
 

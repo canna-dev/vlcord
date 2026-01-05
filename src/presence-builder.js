@@ -36,8 +36,8 @@ export function extractCleanTitle(title, filename = '') {
 
 export function createMovieActivity(movie, vlcStatus, startTimestamp, endTimestamp) {
   const isPlaying = vlcStatus.playing;
-  let details = movie.title ? (movie.year ? `${movie.title} (${movie.year})` : movie.title) : 'Movie';
-  let state = movie.overview ? (movie.overview.length > 125 ? movie.overview.substring(0, 122) + '...' : movie.overview) : (movie.genres ? movie.genres.slice(0, 3).join(', ') : 'No description available');
+  const details = movie.title ? (movie.year ? `${movie.title} (${movie.year})` : movie.title) : 'Movie';
+  const state = movie.overview ? (movie.overview.length > 125 ? movie.overview.substring(0, 122) + '...' : movie.overview) : (movie.genres ? movie.genres.slice(0, 3).join(', ') : 'No description available');
 
   return {
     details,
@@ -68,9 +68,9 @@ export function createTvShowActivity(show, vlcStatus, startTimestamp, endTimesta
     else seasonEpText = `E${formattedShow.episodeNumber}`;
   }
 
-  let details = hasEpisode ? `${formattedShow.title} - ${seasonEpText}` : (formattedShow.title ? `${formattedShow.title}${formattedShow.year ? ` (${formattedShow.year})` : ''}` : 'TV Show');
-  let episodeTitle = formattedShow.episodeTitle || (hasEpisode ? `Episode ${formattedShow.episodeNumber}` : '');
-  let description = formattedShow.overview ? (formattedShow.overview.length > 80 ? formattedShow.overview.substring(0, 77) + '...' : formattedShow.overview) : '';
+  const details = hasEpisode ? `${formattedShow.title} - ${seasonEpText}` : (formattedShow.title ? `${formattedShow.title}${formattedShow.year ? ` (${formattedShow.year})` : ''}` : 'TV Show');
+  const episodeTitle = formattedShow.episodeTitle || (hasEpisode ? `Episode ${formattedShow.episodeNumber}` : '');
+  const description = formattedShow.overview ? (formattedShow.overview.length > 80 ? formattedShow.overview.substring(0, 77) + '...' : formattedShow.overview) : '';
 
   let stateLine = episodeTitle ? (description ? `${episodeTitle} (${description.length > 60 ? description.substring(0, 57) + '...' : description})` : episodeTitle) : (description || (show.genres ? show.genres.slice(0, 3).join(', ') : 'No description available'));
   if (stateLine.length > 125) stateLine = stateLine.substring(0, 122) + '...';

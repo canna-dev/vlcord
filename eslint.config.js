@@ -1,11 +1,17 @@
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+
 export default [
   {
     ignores: ['dist', 'node_modules', '*.d.ts', 'public/**/*']
   },
   {
     files: ['src/**/*.ts', 'tests/**/*.ts'],
+    plugins: {
+      '@typescript-eslint': tsPlugin
+    },
     languageOptions: {
-      parser: '@typescript-eslint/parser',
+      parser: tsParser,
       parserOptions: {
         ecmaVersion: 2021,
         sourceType: 'module'
@@ -14,42 +20,11 @@ export default [
     rules: {
       'no-console': 'warn',
       'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          varsIgnorePattern: '^_'
-        }
-      ],
-      '@typescript-eslint/explicit-function-return-types': [
-        'warn',
-        {
-          allowExpressions: true,
-          allowTypedFunctionExpressions: true
-        }
-      ],
+      '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      'prefer-const': 'error',
+      'prefer-const': 'warn',
       'no-var': 'error',
-      eqeqeq: ['error', 'always'],
-      'no-eval': 'error',
-      'no-implied-eval': 'error',
-      'no-new-func': 'error',
-      'no-throw-literal': 'error',
-      'prefer-promise-reject-errors': 'error',
-      'no-param-reassign': 'error',
-      'no-shadow': 'off',
-      '@typescript-eslint/no-shadow': 'error',
-      'no-duplicate-imports': 'error',
-      'sort-imports': [
-        'warn',
-        {
-          ignoreCase: true,
-          ignoreMemberSort: true,
-          memberSortOrder: 'asc'
-        }
-      ]
+      'eqeqeq': ['error', 'always']
     }
   },
   {

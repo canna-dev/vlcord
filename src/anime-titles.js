@@ -243,7 +243,7 @@ export function formatAnimeTitle(showData) {
   }
   
   const normalizedTitle = showData.title.toLowerCase().trim();
-  let formattedShowData = { ...showData };
+  const formattedShowData = { ...showData };
   
   // Find the anime in our map (by exact match or partial match)
   let animeInfo = animeMap[normalizedTitle];

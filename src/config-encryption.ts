@@ -16,7 +16,7 @@ const ENCRYPTION_VERSION = '1';
 const ALGORITHM = 'aes-256-gcm';
 const KEY_LENGTH = 32; // 256 bits
 const SALT_LENGTH = 16;
-const TAG_LENGTH = 16;
+const _TAG_LENGTH = 16;
 const IV_LENGTH = 12; // GCM recommended IV size
 
 interface EncryptedData {
