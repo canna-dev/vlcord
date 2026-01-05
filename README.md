@@ -1,7 +1,7 @@
 # VLCord
 
 [![Build Status](https://github.com/canna-dev/vlcord/actions/workflows/ci.yml/badge.svg)](https://github.com/canna-dev/vlcord/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/badge/version-1.0.0-blue)](package.json)
+[![npm version](https://img.shields.io/badge/version-2.0.0-blue)](package.json)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-green)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-orange)](LICENSE)
 
