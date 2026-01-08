@@ -18,7 +18,7 @@ const PATTERNS = {
   
   // TV show detection patterns
   TV_PATTERNS: {
-    seasonEpisode: /s(\d{1,2})e(\d{1,2})(?:-e\d{1,2})?/i,
+    seasonEpisode: /s(\d{1,2})[\.\s]*e(\d{1,2})(?:[\.\s]*e\d{1,2})?/i,
     episodeFormat: /episode[.\s](\d{1,2})/i,
     seasonFormat: /season[.\s](\d{1,2})/i,
     numberFormat: /(\d{1,2})x(\d{1,2})/i
