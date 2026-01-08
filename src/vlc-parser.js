@@ -99,11 +99,25 @@ export function parseVLCStatus(vlcData) {
   status.originalTitle = filename || mediaTitle;
 
   // Clean the title based on media type
+  // For TV shows: prioritize titles with season/episode info, skip bare episode titles
   let cleanInfo = null;
   for (const title of possibleTitles) {
     cleanInfo = cleanTitle(title);
     if (cleanInfo && cleanInfo.title && cleanInfo.title !== 'Unknown') {
-      break;
+      // For TV shows, if we found season/episode info, use it
+      if (mediaType === 'tv' && cleanInfo.season !== null && cleanInfo.episode !== null) {
+        break;
+      }
+      // For non-TV or if no season/episode info yet, continue looking
+      // to see if a later title has better season/episode data
+      if (mediaType === 'tv' && (cleanInfo.season !== null || cleanInfo.episode !== null)) {
+        // Found at least season or episode, good enough
+        break;
+      }
+      // For non-TV shows, just take the first valid title
+      if (mediaType !== 'tv') {
+        break;
+      }
     }
   }
 
