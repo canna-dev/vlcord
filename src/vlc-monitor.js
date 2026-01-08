@@ -170,6 +170,17 @@ export class VLCMonitor extends EventEmitter {
             }
           }
         }
+        
+        // Merge season/episode info from parsed status into metadata
+        if (this.currentStatus.metadata && parsed.season !== undefined) {
+          this.currentStatus.metadata.seasonNumber = parsed.season;
+        }
+        if (this.currentStatus.metadata && parsed.episode !== undefined) {
+          this.currentStatus.metadata.episodeNumber = parsed.episode;
+        }
+        if (this.currentStatus.metadata && parsed.episodeTitle) {
+          this.currentStatus.metadata.episodeTitle = parsed.episodeTitle;
+        }
       }
 
       // Emit status update event
