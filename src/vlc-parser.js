@@ -48,15 +48,26 @@ export function parseVLCStatus(vlcData) {
   }
 
   // Determine media type
+  // Prioritize: mediaTitle > folder names > filename
   const possibleTitles = [mediaTitle];
+  
+  if (filePath) {
+    const pathParts = filePath.split(/[\\/]/);
+    // Add parent folder (likely show/movie name)
+    if (pathParts.length > 2) {
+      possibleTitles.push(pathParts[pathParts.length - 2]);
+    }
+    // Add grandparent folder if exists (for shows like /ShowName/Season1/)
+    if (pathParts.length > 3) {
+      possibleTitles.push(pathParts[pathParts.length - 3]);
+    }
+  }
+  
+  // Add filename last (often contains episode titles)
   if (filename) possibleTitles.push(filename);
   if (filePath) {
     const fileNameFromPath = filePath.split(/[\\/]/).pop();
     if (fileNameFromPath) possibleTitles.push(fileNameFromPath);
-    const pathParts = filePath.split(/[\\/]/);
-    if (pathParts.length > 2) {
-      possibleTitles.push(pathParts[pathParts.length - 2]);
-    }
   }
 
   let mediaType = 'unknown';
