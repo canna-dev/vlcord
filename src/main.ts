@@ -5,6 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import fs from 'fs';
 import logger from './logger.js';
 import { VLCMonitor } from './vlc-monitor.js';
 import { DiscordPresence } from './discord-presence.js';
@@ -60,34 +61,9 @@ if (!validateConfig(config)) {
   process.exit(1);
 }
 
-// Initialize config hot-reload manager
-const configHotReload = new ConfigHotReloadManager();
-configHotReload.watchConfig(async (newConfig) => {
-  // Notify about config changes
-  logger.info('Configuration hot-reloaded:', Object.keys(newConfig).join(', '));
-  
-  // Update VLC monitor if VLC settings changed
-  if (newConfig.vlcHost || newConfig.vlcPort || newConfig.vlcPassword || newConfig.tmdbApiKey) {
-    vlcMonitor.updateConfig({
-      host: newConfig.vlcHost || VLC_HOST,
-      port: newConfig.vlcPort || VLC_PORT,
-      password: newConfig.vlcPassword || VLC_PASSWORD,
-      tmdbApiKey: newConfig.tmdbApiKey || TMDB_API_KEY
-    });
-  }
-  
-  // Update Discord presence if client ID changed
-  if (newConfig.discordClientId) {
-    discordPresence.updateConfig({
-      clientId: newConfig.discordClientId
-    });
-  }
-  
-  // Clear cache if config changed (helps with consistency)
-  if (cacheManager.isConnected()) {
-    await cacheManager.clear('*');
-  }
-});
+// Initialize config hot-reload manager with explicit config path
+const CONFIG_PATH = path.join(__dirname, '..', 'vlcord-config.json');
+const configHotReload = new ConfigHotReloadManager(CONFIG_PATH);
 
 // Configuration with fallback to env vars
 const PORT = process.env.WEB_PORT || process.env.PORT || 7100;
@@ -96,7 +72,29 @@ const VLC_PORT = process.env.VLC_PORT || config.vlcPort;
 const VLC_PASSWORD = process.env.VLC_PASSWORD || config.vlcPassword;
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || config.discordClientId;
 const TMDB_API_KEY = process.env.TMDB_API_KEY || config.tmdbApiKey;
-const ADMIN_TOKEN = process.env.VLCORD_ADMIN_TOKEN || config.adminToken;
+// NOTE: admin token can be edited in vlcord-config.json; env var takes precedence.
+
+function normalizeToken(value: unknown): string {
+  return String(value ?? '').trim();
+}
+
+function getExpectedAdminToken(): string {
+  const envToken = normalizeToken(process.env.VLCORD_ADMIN_TOKEN);
+  if (envToken) return envToken;
+
+  // Prefer in-memory config, but fall back to reading from disk in case the file
+  // was edited outside of the app (common during setup).
+  const configToken = normalizeToken(configManager.getConfig()?.adminToken);
+  if (configToken) return configToken;
+
+  try {
+    const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    return normalizeToken(parsed?.adminToken);
+  } catch {
+    return '';
+  }
+}
 
 // Validate critical IDs
 try {
@@ -124,8 +122,16 @@ const vlcSetupHelper = new VLCSetupHelper();
 
 // Simple admin auth middleware for sensitive endpoints
 function requireAdmin(req, res, next) {
-  const token = req.header('X-VLCORD-ADMIN-TOKEN') || req.query.adminToken || req.body?.adminToken;
-  if (!token || token !== ADMIN_TOKEN) {
+  const authHeader = req.header('Authorization') || '';
+  const bearer = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : '';
+  const token = normalizeToken(req.header('X-VLCORD-ADMIN-TOKEN') || bearer || req.query.adminToken || req.body?.adminToken);
+  const expected = getExpectedAdminToken();
+
+  if (!expected) {
+    return res.status(500).json({ error: 'admin_token_not_configured' });
+  }
+
+  if (!token || token !== expected) {
     return res.status(401).json({ error: 'unauthorized' });
   }
   next();
@@ -273,7 +279,28 @@ app.post('/api/system/circuit-breakers/:service/reset', requireAdmin, (req, res)
 app.get('/api/system/health/diagnostics', requireAdmin, (req, res) => {
   try {
     const diagnostics = healthCheckManager.getDiagnostics();
-    res.json(diagnostics);
+    const services = (diagnostics as any)?.services || {};
+    const serviceNames = Object.keys(services);
+    const totals = serviceNames.reduce(
+      (acc, name) => {
+        const item = services[name] || {};
+        acc.failures += Number(item.failures || 0);
+        acc.successes += Number(item.successes || 0);
+        return acc;
+      },
+      { failures: 0, successes: 0 }
+    );
+
+    res.json({
+      status: 'ok',
+      summary: {
+        uptimeMs: (diagnostics as any)?.uptime ?? null,
+        services: serviceNames,
+        totalFailures: totals.failures,
+        totalSuccesses: totals.successes,
+      },
+      diagnostics,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -318,7 +345,7 @@ app.get('/api/system/logs', requireAdmin, (req, res) => {
 // Cache status endpoint (if Redis enabled)
 app.get('/api/system/cache/status', requireAdmin, (req, res) => {
   try {
-    if (!cacheManager.isConnected()) {
+    if (!cacheManager.getConnectionStatus()) {
       return res.json({
         enabled: false,
         connected: false,
@@ -356,16 +383,6 @@ app.get('/api/config', (req, res) => {
 app.post('/api/config', requireAdmin, async (req, res) => {
   const saved = await configManager.saveConfig(req.body);
   res.json({ success: saved });
-});
-
-// Test VLC Connection endpoint
-app.get('/api/test-vlc-connection', async (req, res) => {
-  try {
-    const result = await vlcSetupHelper.testConnection();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ connected: false, message: error.message });
-  }
 });
 
 // Health endpoint - enhanced with connection status and diagnostics
@@ -433,6 +450,40 @@ const discordPresence = process.env.DISABLE_DISCORD === 'true'
       clientId: DISCORD_CLIENT_ID
     });
 
+// Start watching config only after core services are initialized
+configHotReload.watchConfig(async (newConfig) => {
+  logger.info('Configuration hot-reloaded:', Object.keys(newConfig || {}).join(', '));
+
+  // Notify dashboard clients
+  io.emit('configHotReload', {
+    timestamp: new Date().toISOString(),
+    keys: Object.keys(newConfig || {}),
+    changedKeys: Object.keys(newConfig || {}),
+  });
+
+  // Update VLC monitor if VLC settings changed
+  if (newConfig.vlcHost || newConfig.vlcPort || newConfig.vlcPassword || newConfig.tmdbApiKey) {
+    vlcMonitor.updateConfig({
+      host: newConfig.vlcHost || VLC_HOST,
+      port: newConfig.vlcPort || VLC_PORT,
+      password: newConfig.vlcPassword || VLC_PASSWORD,
+      tmdbApiKey: newConfig.tmdbApiKey || TMDB_API_KEY
+    });
+  }
+
+  // Update Discord presence if client ID changed
+  if (newConfig.discordClientId) {
+    discordPresence.updateConfig({
+      clientId: newConfig.discordClientId
+    });
+  }
+
+  // Clear cache if config changed (helps with consistency)
+  if (cacheManager.getConnectionStatus()) {
+    await cacheManager.clear('*');
+  }
+});
+
 // Set up WebSocket communication
 io.on('connection', (socket) => {
   logger.info('Client connected');
@@ -445,7 +496,9 @@ io.on('connection', (socket) => {
     vlcPort: VLC_PORT,
     vlcPassword: VLC_PASSWORD,
     discordClientId: DISCORD_CLIENT_ID,
-    tmdbApiKey: TMDB_API_KEY
+    tmdbApiKey: TMDB_API_KEY,
+    // Prefill for single-machine installs (env token takes precedence)
+    adminToken: getExpectedAdminToken()
   });
 
   // Listen for Discord client type errors
@@ -533,7 +586,7 @@ process.on('SIGINT', () => {
   logger.info('Shutting down...');
   vlcMonitor.stop();
   discordPresence.disconnect();
-  if (cacheManager.isConnected()) {
+  if (cacheManager.getConnectionStatus()) {
     cacheManager.disconnect().catch(err => logger.warn('Error disconnecting cache:', err.message));
   }
   process.exit(0);

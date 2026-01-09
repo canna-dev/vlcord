@@ -31,9 +31,18 @@ export class ConfigManager {
 
     try {
       if (fsSync.existsSync(CONFIG_FILE)) {
-        const data = await fs.readFile(CONFIG_FILE, 'utf8');
-        const savedConfig = JSON.parse(data);
-        this.config = { ...this.defaultConfig, ...savedConfig };
+        // If a directory exists with the expected file name, warn and skip reading
+        if (fsSync.lstatSync(CONFIG_FILE).isDirectory()) {
+          logger.warn(
+            'Config path points to a directory but should be a file:',
+            CONFIG_FILE
+          );
+          this.config = { ...this.defaultConfig };
+        } else {
+          const data = await fs.readFile(CONFIG_FILE, 'utf8');
+          const savedConfig = JSON.parse(data);
+          this.config = { ...this.defaultConfig, ...savedConfig };
+        }
       } else {
         this.config = { ...this.defaultConfig };
       }

@@ -22,6 +22,12 @@
             <nav class="tabs-nav">
                 <button class="tab-btn active" data-tab="overview">Overview</button>
                 <button class="tab-btn" data-tab="settings">Settings</button>
+                <button class="tab-btn" data-tab="diagnostics">Diagnostics</button>
+                <button class="tab-btn" data-tab="logs">Logs</button>
+                <button class="tab-btn" data-tab="activity">Activity</button>
+                <button class="tab-btn" data-tab="overrides">Overrides</button>
+                <button class="tab-btn" data-tab="wizard">Wizard</button>
+                <button class="tab-btn" data-tab="appearance">Appearance</button>
             </nav>
 
             <!-- Overview Tab Content -->
@@ -104,10 +110,168 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="settings-group">
+                            <h3>Admin</h3>
+                            <div class="form-row">
+                                <label for="admin-token">Admin Token (for protected endpoints):</label>
+                                <input type="password" id="admin-token" placeholder="vlcord_default_admin_token">
+                            </div>
+                        </div>
                         
                         <div class="form-buttons">
                             <button type="button" id="save-settings" class="save-btn">Save Settings</button>
                         </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Diagnostics Tab Content -->
+            <div class="tab-content" id="diagnostics-tab">
+                <section class="content-section">
+                    <h2>Live Status</h2>
+                    <div class="diag-grid">
+                        <div class="diag-card">
+                            <h3>VLC Status</h3>
+                            <pre class="code-block" id="vlc-status-json">{}</pre>
+                        </div>
+                        <div class="diag-card">
+                            <h3>Discord Status</h3>
+                            <pre class="code-block" id="discord-status-json">{}</pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="content-section">
+                    <div class="diag-header">
+                        <h2>System Diagnostics</h2>
+                        <div class="diag-actions">
+                            <button id="refresh-diagnostics" class="btn btn-secondary">Refresh</button>
+                            <button id="copy-diagnostics" class="btn btn-secondary">Copy</button>
+                        </div>
+                    </div>
+                    <pre class="code-block" id="health-diagnostics">{}</pre>
+                </section>
+
+                <section class="content-section">
+                    <h2>Last Discord Payload</h2>
+                    <pre class="code-block" id="last-discord-payload">{}</pre>
+                </section>
+            </div>
+
+            <!-- Logs Tab Content -->
+            <div class="tab-content" id="logs-tab">
+                <section class="content-section">
+                    <div class="diag-header">
+                        <h2>Live Logs</h2>
+                        <div class="diag-actions">
+                            <button id="logs-pause" class="btn btn-secondary">Pause</button>
+                            <button id="logs-clear" class="btn btn-secondary">Clear</button>
+                            <button id="logs-refresh" class="btn btn-secondary">Refresh</button>
+                        </div>
+                    </div>
+                    <div id="logs-list" class="log-list"></div>
+                </section>
+            </div>
+
+            <!-- Activity Tab Content -->
+            <div class="tab-content" id="activity-tab">
+                <section class="content-section">
+                    <div class="diag-header">
+                        <h2>Activity History</h2>
+                        <div class="diag-actions">
+                            <button id="activity-refresh" class="btn btn-secondary">Refresh</button>
+                        </div>
+                    </div>
+                    <div id="activity-stats" class="kv-grid"></div>
+                    <div id="activity-list" class="log-list"></div>
+                </section>
+            </div>
+
+            <!-- Overrides Tab Content -->
+            <div class="tab-content" id="overrides-tab">
+                <section class="content-section">
+                    <div class="diag-header">
+                        <h2>Metadata Overrides</h2>
+                        <div class="diag-actions">
+                            <button id="overrides-refresh" class="btn btn-secondary">Refresh</button>
+                        </div>
+                    </div>
+
+                    <div class="overrides-form">
+                        <div class="form-row">
+                            <label for="override-category">Category:</label>
+                            <input id="override-category" type="text" placeholder="movie | tv | anime">
+                        </div>
+                        <div class="form-row">
+                            <label for="override-title">Title:</label>
+                            <input id="override-title" type="text" placeholder="Title as seen in VLC">
+                        </div>
+                        <div class="form-row">
+                            <label for="override-json">Override JSON:</label>
+                            <textarea id="override-json" rows="6" placeholder='{"title":"...","year":2020,...}'></textarea>
+                        </div>
+                        <div class="form-buttons">
+                            <button id="override-add" type="button" class="save-btn">Add / Update</button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="table" id="overrides-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Title</th>
+                                    <th>Override</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Wizard Tab Content -->
+            <div class="tab-content" id="wizard-tab">
+                <section class="content-section">
+                    <h2>Connection Wizard</h2>
+                    <div class="wizard-steps">
+                        <div class="wizard-step">
+                            <h3>1) Test VLC Connection</h3>
+                            <p>Uses the current Settings values.</p>
+                            <button id="wizard-test-vlc" class="btn btn-primary">Test VLC</button>
+                            <pre class="code-block" id="wizard-vlc-result">{}</pre>
+                        </div>
+                        <div class="wizard-step">
+                            <h3>2) Check Discord RPC</h3>
+                            <p>Shows the server’s Discord connection status.</p>
+                            <button id="wizard-check-discord" class="btn btn-primary">Check Discord</button>
+                            <pre class="code-block" id="wizard-discord-result">{}</pre>
+                        </div>
+                        <div class="wizard-step">
+                            <h3>3) Verify Protected Endpoints</h3>
+                            <p>Requires Admin Token from Settings.</p>
+                            <button id="wizard-check-admin" class="btn btn-primary">Check Admin</button>
+                            <pre class="code-block" id="wizard-admin-result">{}</pre>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Appearance Tab Content -->
+            <div class="tab-content" id="appearance-tab">
+                <section class="content-section">
+                    <h2>Appearance</h2>
+                    <div class="appearance-row">
+                        <div>
+                            <h3>Theme</h3>
+                            <p class="help-text">Persists in your browser.</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider"></span>
+                        </label>
                     </div>
                 </section>
             </div>

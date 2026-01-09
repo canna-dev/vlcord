@@ -38,8 +38,8 @@ export function parseVLCStatus(vlcData) {
     }
   }
 
-  // If no media is playing or title is empty
-  if (!mediaTitle || vlcData.state === 'stopped') {
+  // If VLC reports stopped, clear state
+  if (vlcData.state === 'stopped') {
     status.title = null;
     status.originalTitle = null;
     status.mediaType = null;
@@ -48,8 +48,9 @@ export function parseVLCStatus(vlcData) {
   }
 
   // Determine media type
-  // Prioritize: mediaTitle > folder names > filename
-  const possibleTitles = [mediaTitle];
+  // Prioritize: meta.title > folder names > filename
+  const possibleTitles = [];
+  if (mediaTitle) possibleTitles.push(mediaTitle);
   
   if (filePath) {
     const pathParts = filePath.split(/[\\/]/);
@@ -70,8 +71,28 @@ export function parseVLCStatus(vlcData) {
     if (fileNameFromPath) possibleTitles.push(fileNameFromPath);
   }
 
+  // Normalize candidates: trim, drop extensions for filename/path-derived entries
+  const candidates = possibleTitles
+    .filter(Boolean)
+    .map(t => String(t).trim())
+    .filter(t => t.length > 0)
+    .map(t => {
+      // Remove common video extensions when candidate looks like a filename
+      const m = t.match(/^(.*)\.(mp4|mkv|avi|mov|wmv|flv|webm|m4v)$/i);
+      return m ? m[1] : t;
+    });
+
+  // If we have no viable candidates, we can't produce a title
+  if (candidates.length === 0) {
+    status.title = null;
+    status.originalTitle = null;
+    status.mediaType = null;
+    status.metadata = null;
+    return status;
+  }
+
   let mediaType = 'unknown';
-  for (const title of possibleTitles) {
+  for (const title of candidates) {
     if (isTvShow(title)) {
       mediaType = 'tv';
       break;
@@ -85,7 +106,7 @@ export function parseVLCStatus(vlcData) {
   }
 
   if (mediaType === 'unknown') {
-    for (const title of possibleTitles) {
+    for (const title of candidates) {
       const cleanInfo = cleanTitle(title);
       if (cleanInfo && cleanInfo.type) {
         mediaType = cleanInfo.type;
@@ -101,7 +122,7 @@ export function parseVLCStatus(vlcData) {
   // Clean the title based on media type
   // For TV shows: prioritize titles with season/episode info, skip bare episode titles
   let cleanInfo = null;
-  for (const title of possibleTitles) {
+  for (const title of candidates) {
     cleanInfo = cleanTitle(title);
     if (cleanInfo && cleanInfo.title && cleanInfo.title !== 'Unknown') {
       // For TV shows, if we found season/episode info, use it
@@ -122,7 +143,8 @@ export function parseVLCStatus(vlcData) {
   }
 
   if (!cleanInfo || !cleanInfo.title || cleanInfo.title === 'Unknown') {
-    cleanInfo = cleanTitle(mediaTitle);
+    // Fallback to first candidate if meta.title was empty
+    cleanInfo = cleanTitle(candidates[0] || '');
   }
 
   // Set title info based on media type
@@ -151,6 +173,8 @@ export function parseVLCStatus(vlcData) {
     }
   }
 
+  // Expose cleaned title for downstream fallbacks (e.g., Discord presence)
+  status.cleanTitle = cleanInfo.title || null;
   status.titleForLookup = titleForLookup;
   status.mediaInfo = cleanInfo;
   return status;
