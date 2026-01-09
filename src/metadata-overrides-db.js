@@ -13,7 +13,7 @@ import logger from './logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const OVERRIDES_FILE = path.join(__dirname, '..', 'metadata-overrides.json');
+const OVERRIDES_FILE = process.env.VLCORD_METADATA_OVERRIDES_PATH || path.join(__dirname, '..', 'metadata-overrides.json');
 
 const DEFAULT_OVERRIDES = {
   movies: {

@@ -2,13 +2,15 @@
   "name": "vlcord",
   "version": "2.0.0",
   "description": "Discord Rich Presence integration for VLC Media Player with automatic movie/TV show detection",
-  "main": "src/main.ts",
+  "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
     "start": "tsx src/main.ts",
     "dev": "nodemon --exec tsx src/main.ts --ignore public/",
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "electron:dev": "npm run build; electron .",
+    "electron:dist:win": "npm run build; electron-builder --win portable",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
@@ -55,6 +57,8 @@
     "redis": "^4.6.0"
   },
   "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^24.13.3",
     "tsx": "^4.7.0",
     "jest": "^29.0.0",
     "ts-jest": "^29.1.1",
@@ -73,5 +77,31 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "build": {
+    "appId": "com.vlcord.app",
+    "productName": "VLCord",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "public/**",
+      "assets/**",
+      "electron/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    }
+  }
 }

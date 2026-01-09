@@ -62,7 +62,7 @@ if (!validateConfig(config)) {
 }
 
 // Initialize config hot-reload manager with explicit config path
-const CONFIG_PATH = path.join(__dirname, '..', 'vlcord-config.json');
+const CONFIG_PATH = process.env.VLCORD_CONFIG_PATH || path.join(__dirname, '..', 'vlcord-config.json');
 const configHotReload = new ConfigHotReloadManager(CONFIG_PATH);
 
 // Configuration with fallback to env vars

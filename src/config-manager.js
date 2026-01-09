@@ -7,7 +7,7 @@ import logger from './logger.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const CONFIG_FILE = path.join(__dirname, '..', 'vlcord-config.json');
+const CONFIG_FILE = process.env.VLCORD_CONFIG_PATH || path.join(__dirname, '..', 'vlcord-config.json');
 
 export class ConfigManager {
   constructor() {

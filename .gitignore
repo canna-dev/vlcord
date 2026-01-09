@@ -128,3 +128,6 @@ WATCHING_FIX*.md
 # Config files that contain sensitive data
 config.json
 settings.json
+
+# VLCord local config (contains secrets on single-machine installs)
+vlcord-config.json
