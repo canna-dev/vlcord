@@ -363,9 +363,20 @@ app.get('/api/system/cache/status', requireAdmin, (req, res) => {
 
 // VLC setup and diagnostic endpoints
 app.post('/api/vlc/test', async (req, res) => {
-  const { host, port, password } = req.body;
-  const result = await vlcSetupHelper.testVLCConnection(host, port, password);
-  res.json(result);
+  const { host, port, password } = (req.body ?? {}) as {
+    host?: string;
+    port?: number | string;
+    password?: string;
+  };
+
+  const normalizedPort = typeof port === 'string' ? parseInt(port, 10) : port;
+  const result = await vlcSetupHelper.testVLCConnection(host, normalizedPort, password);
+
+  // Dashboard expects `connected` (legacy). Keep `success` for backwards compatibility.
+  res.json({
+    ...result,
+    connected: Boolean(result?.success)
+  });
 });
 
 app.get('/api/vlc/setup-info', async (req, res) => {
