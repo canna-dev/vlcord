@@ -13,7 +13,7 @@ import { ConfigManager } from './config-manager.js';
 import client from 'prom-client';
 import { getDiscordClientInfo } from './discord-client-detector.js';
 import { VLCSetupHelper } from './vlc-setup-helper.js';
-import { validateEnvironment, validateConfig } from './env-validator.js';
+import { validateConfig } from './env-validator.js';
 import { validateDiscordClientId, validateTmdbApiKey } from './input-validator.js';
 import { circuitBreakerManager } from './circuit-breaker.js';
 import { activityHistory } from './activity-history.js';
@@ -24,9 +24,6 @@ import { ConfigHotReloadManager } from './config-hot-reload.ts';
 
 // Load environment variables
 dotenv.config();
-
-// Validate environment BEFORE doing anything else
-validateEnvironment();
 
 // Get directory path
 const __filename = fileURLToPath(import.meta.url);
