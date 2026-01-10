@@ -71,6 +71,12 @@ jspm_packages/
 .nuxt
 dist
 
+# TypeScript incremental build info
+.tsbuildinfo
+
+# Electron Builder output
+release/
+
 # Storybook build outputs
 .out
 .storybook-out

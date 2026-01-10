@@ -9,8 +9,8 @@
     "dev": "nodemon --exec tsx src/main.ts --ignore public/",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "electron:dev": "npm run build; electron .",
-    "electron:dist:win": "npm run build; electron-builder --win portable",
+    "electron:dev": "electron .",
+    "electron:dist:win": "electron-builder --win portable",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand",
@@ -46,33 +46,33 @@
     "discord-rpc": "^4.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "lru-cache": "^10.0.0",
     "node-fetch": "^3.3.2",
     "parse-torrent-name": "^0.5.4",
-    "lru-cache": "^10.0.0",
     "prom-client": "^15.0.0",
+    "redis": "^4.6.0",
     "socket.io": "^4.8.1",
-    "sqlite3": "^5.1.6",
-    "express-rate-limit": "^7.1.5",
     "swagger-ui-express": "^5.0.0",
-    "redis": "^4.6.0"
+    "tsx": "^4.7.0"
   },
   "devDependencies": {
-    "electron": "^33.2.1",
-    "electron-builder": "^24.13.3",
-    "tsx": "^4.7.0",
-    "jest": "^29.0.0",
-    "ts-jest": "^29.1.1",
-    "eslint": "^8.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
-    "prettier": "^2.0.0",
-    "nodemon": "^3.0.2",
-    "typescript": "^5.3.3",
-    "@types/node": "^20.10.0",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.10",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "electron": "^33.2.1",
+    "electron-builder": "^24.13.3",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "jest-mock-extended": "^3.0.5",
+    "nodemon": "^3.0.2",
+    "png-to-ico": "^3.0.1",
+    "prettier": "^2.0.0",
     "supertest": "^6.3.3",
-    "jest-mock-extended": "^3.0.5"
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -86,6 +86,7 @@
     },
     "files": [
       "dist/**",
+      "src/**",
       "public/**",
       "assets/**",
       "electron/**",
@@ -101,7 +102,8 @@
       "target": [
         "portable"
       ],
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false
     }
   }
 }

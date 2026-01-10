@@ -28,7 +28,8 @@ function getUserDataPaths() {
 
 function startServer() {
   const appPath = app.getAppPath();
-  const serverEntry = path.join(appPath, 'dist', 'main.js');
+  const tsxCli = path.join(appPath, 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const serverEntry = path.join(appPath, 'src', 'main.ts');
   const { configPath, overridesPath, logsDir } = getUserDataPaths();
 
   const env = {
@@ -42,7 +43,7 @@ function startServer() {
   };
 
   // Run the server using Electron's embedded Node
-  serverProcess = spawn(process.execPath, [serverEntry], {
+  serverProcess = spawn(process.execPath, [tsxCli, serverEntry], {
     env,
     stdio: 'pipe',
     windowsHide: true,
