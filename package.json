@@ -92,6 +92,10 @@
       "electron/**",
       "package.json"
     ],
+    "asarUnpack": [
+      "**/node_modules/@esbuild/**",
+      "**/node_modules/esbuild/**"
+    ],
     "extraResources": [
       {
         "from": "assets/icon.ico",

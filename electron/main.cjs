@@ -1,13 +1,35 @@
 const { app, BrowserWindow, Tray, Menu, nativeImage, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const fs = require('fs');
 
 let mainWindow = null;
 let tray = null;
 let serverProcess = null;
 let quitting = false;
+let serverLogPath = null;
+let serverLogTail = [];
 
 const DEFAULT_PORT = 7100;
+
+function ensureDir(dirPath) {
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+  } catch {
+    // ignore
+  }
+}
+
+function pushTailLines(text) {
+  const lines = String(text).split(/\r?\n/);
+  for (const line of lines) {
+    if (!line) continue;
+    serverLogTail.push(line);
+  }
+  if (serverLogTail.length > 200) {
+    serverLogTail = serverLogTail.slice(serverLogTail.length - 200);
+  }
+}
 
 function getIconPath() {
   // In production, electron-builder will place icon.ico in process.resourcesPath
@@ -32,15 +54,47 @@ function startServer() {
   const serverEntry = path.join(appPath, 'src', 'main.ts');
   const { configPath, overridesPath, logsDir } = getUserDataPaths();
 
+  // When packaged, the esbuild binary must live outside app.asar.
+  // electron-builder puts unpacked files under resources/app.asar.unpacked.
+  const esbuildBinaryPath = app.isPackaged
+    ? path.join(
+        process.resourcesPath,
+        'app.asar.unpacked',
+        'node_modules',
+        '@esbuild',
+        'win32-x64',
+        'esbuild.exe'
+      )
+    : path.join(appPath, 'node_modules', '@esbuild', 'win32-x64', 'esbuild.exe');
+
+  ensureDir(logsDir);
+  serverLogPath = path.join(logsDir, 'server.log');
+  serverLogTail = [];
+  // Use sync writes for the header so we always get *something* even if the process crashes immediately.
+  try {
+    fs.appendFileSync(serverLogPath, `\n--- VLCord server start ${new Date().toISOString()} ---\n`);
+    fs.appendFileSync(
+      serverLogPath,
+      `ESBUILD_BINARY_PATH=${esbuildBinaryPath} exists=${fs.existsSync(esbuildBinaryPath)}\n`
+    );
+  } catch {
+    // ignore
+  }
+  const logStream = fs.createWriteStream(serverLogPath, { flags: 'a' });
+
   const env = {
     ...process.env,
     ELECTRON_RUN_AS_NODE: '1',
+    ESBUILD_BINARY_PATH: esbuildBinaryPath,
     VLCORD_CONFIG_PATH: configPath,
     VLCORD_METADATA_OVERRIDES_PATH: overridesPath,
     VLCORD_LOG_DIR: logsDir,
     // Prefer binding locally for desktop app
     WEB_PORT: String(process.env.WEB_PORT || process.env.PORT || DEFAULT_PORT),
   };
+
+  // Also set on the parent process env to help any modules that read it before spawn.
+  process.env.ESBUILD_BINARY_PATH = esbuildBinaryPath;
 
   // Run the server using Electron's embedded Node
   serverProcess = spawn(process.execPath, [tsxCli, serverEntry], {
@@ -49,13 +103,44 @@ function startServer() {
     windowsHide: true,
   });
 
+  if (serverProcess.stdout) {
+    serverProcess.stdout.on('data', (buf) => {
+      const text = buf.toString('utf8');
+      pushTailLines(text);
+      logStream.write(text);
+    });
+  }
+  if (serverProcess.stderr) {
+    serverProcess.stderr.on('data', (buf) => {
+      const text = buf.toString('utf8');
+      pushTailLines(text);
+      logStream.write(text);
+    });
+  }
+
   serverProcess.on('exit', (code) => {
     if (quitting) return;
-    dialog.showErrorBox('VLCord stopped', `The background server exited (code ${code ?? 'unknown'}).`);
+    try {
+      logStream.write(`\n--- VLCord server exit code ${code ?? 'unknown'} ${new Date().toISOString()} ---\n`);
+      logStream.end();
+    } catch {
+      // ignore
+    }
+
+    const tail = serverLogTail.slice(-30).join('\n');
+    const extra = serverLogPath ? `\n\nLog: ${serverLogPath}` : '';
+    const details = tail ? `\n\nLast output:\n${tail}` : '';
+    dialog.showErrorBox('VLCord stopped', `The background server exited (code ${code ?? 'unknown'}).${extra}${details}`);
     app.quit();
   });
 
   serverProcess.on('error', (err) => {
+    try {
+      logStream.write(`\n--- VLCord server spawn error ${new Date().toISOString()} ---\n${err?.stack || err?.message || String(err)}\n`);
+      logStream.end();
+    } catch {
+      // ignore
+    }
     dialog.showErrorBox('Failed to start VLCord', err?.message || String(err));
     app.quit();
   });
