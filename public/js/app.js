@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Admin token input
     const adminTokenInput = document.getElementById('admin-token');
+    const quitAppBtn = document.getElementById('quit-app');
 
     // Tab functionality
     const tabButtons = document.querySelectorAll('.tab-btn');
@@ -204,6 +205,24 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 saveSettingsButton.textContent = originalText;
             }, 2000);
+        });
+    }
+
+    // Quit app (Electron desktop only)
+    if (quitAppBtn) {
+        quitAppBtn.addEventListener('click', async () => {
+            const ok = confirm('Quit VLCord? (It will keep running in the tray when you close the window — this fully exits.)');
+            if (!ok) return;
+
+            try {
+                if (window.vlcord && typeof window.vlcord.quit === 'function') {
+                    await window.vlcord.quit();
+                } else {
+                    showNotification('Quit is only available in the desktop app build.', 'warning');
+                }
+            } catch (e) {
+                showNotification(`Failed to quit: ${e.message || e}`, 'error');
+            }
         });
     }
     

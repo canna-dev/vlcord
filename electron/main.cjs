@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, dialog } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, dialog, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -85,6 +85,7 @@ function createMainWindow(port) {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.cjs'),
     },
   });
 
@@ -185,6 +186,20 @@ if (!gotLock) {
 app.whenReady().then(async () => {
   setAppMenu();
   createTray();
+
+  ipcMain.handle('vlcord:quit', async () => {
+    quitting = true;
+    app.quit();
+    return true;
+  });
+
+  ipcMain.handle('vlcord:show', async () => {
+    if (mainWindow) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+    return true;
+  });
 
   startServer();
 
